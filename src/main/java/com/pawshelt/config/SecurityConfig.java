@@ -11,11 +11,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable() // Solo en desarrollo
+                .csrf().disable()
+                .headers(headers -> headers
+                        .frameOptions().sameOrigin() // 👈 ESTA LÍNEA PERMITE IFRAME PARA H2
+                )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .formLogin().disable();
+
         return http.build();
     }
 }
