@@ -16,9 +16,11 @@ public class SecurityConfig {
                         .frameOptions().sameOrigin() // 👈 ESTA LÍNEA PERMITE IFRAME PARA H2
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/h2-console/**", "/usuarios/**", "/login").permitAll() // públicos
+                        .requestMatchers("/animales/**").authenticated() // requieren login
+                        .anyRequest().denyAll()
                 )
+
                 .formLogin().disable();
 
         return http.build();
