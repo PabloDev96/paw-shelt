@@ -2,6 +2,7 @@ package com.pawshelt.controller;
 
 import com.pawshelt.model.Animal;
 import com.pawshelt.repository.AnimalRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,15 +17,54 @@ public class AnimalController {
         this.repository = repository;
     }
 
-    /* METODO PARA OBTENER LOS DATOS DE LA ENTIDAD ANIMAL */
+    /* METODO PARA OBTENER TODOS LOS DATOS DE LA ENTIDAD ANIMAL */
     @GetMapping
     public List<Animal> getAllAnimales() {
         return repository.findAll();
     }
 
+    /* METODO PARA CREAR UN ANIMAL */
     @PostMapping
     public Animal crearAnimal(@RequestBody Animal animal) {
         return repository.save(animal);
     }
+
+    /* METODO PARA ELIMINAR UN ANIMAL */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarAnimal(@PathVariable Long id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } else {
+            return ResponseEntity.notFound().build();  // 404 Not Found
+        }
+    }
+
+    /* METODO PARA EDITAR UN ANIMAL POR ID */
+    @PutMapping("/{id}")
+    public ResponseEntity<Animal> actualizarAnimal(@PathVariable Long id, @RequestBody Animal animalActualizado) {
+        return repository.findById(id)
+                .map(animal -> {
+                    animal.setNombre(animalActualizado.getNombre());
+                    animal.setRaza(animalActualizado.getRaza());
+                    animal.setEdad(animalActualizado.getEdad());
+                    animal.setTipo(animalActualizado.getTipo());
+                    animal.setEstado(animalActualizado.getEstado());
+                    animal.setFotoPerfilUrl(animalActualizado.getFotoPerfilUrl());
+
+                    Animal actualizado = repository.save(animal);
+                    return ResponseEntity.ok(actualizado);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /* METODO PARA OBTENER TODOS LOS DATOS DE UN ANIMAL POR ID */
+    @GetMapping("/{id}")
+    public ResponseEntity<Animal> getAnimalPorId(@PathVariable Long id) {
+        return repository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
 }
