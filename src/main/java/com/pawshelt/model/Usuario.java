@@ -14,7 +14,7 @@ public class Usuario {
 
     private String nombre;
     private String email;
-    private String contraseña;
+    private String password;
 
     @Enumerated(EnumType.STRING)
     private Rol rol;
@@ -43,12 +43,12 @@ public class Usuario {
         this.email = email;
     }
 
-    public String getContraseña() {
-        return contraseña;
+    public String getPassword() {
+        return password;
     }
 
-    public void setContraseña(String contraseña) {
-        this.contraseña = contraseña;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Rol getRol() {
