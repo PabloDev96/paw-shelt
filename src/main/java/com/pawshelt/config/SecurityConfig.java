@@ -7,32 +7,61 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
 
 @Configuration
 public class SecurityConfig {
-    // ⬇️ Bean para hashear y verificar contraseñas
+
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
+    // Bean para hashear y verificar contraseñas
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // ⬇️ Configuración de seguridad HTTP
+    // CORS configuration
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5173")); // Front de reactvite (provisional aun sin desplegar)
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowCredentials(true); // para cookies/sesiones
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    // Configuración de seguridad HTTP
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
                 .headers(headers -> headers
-                        .frameOptions().sameOrigin() // 👈 ESTA LÍNEA PERMITE IFRAME PARA H2
+                        .frameOptions().sameOrigin() // ESTA LÍNEA PERMITE IFRAME PARA H2
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**", "/usuarios/**", "/auth/register", "/auth/login").permitAll() // públicos
-                        .requestMatchers("/animales/**").authenticated() // requieren login
+                          .requestMatchers("/animales/**").authenticated() // requieren login
                         .anyRequest().denyAll()
                 )
 
                 .formLogin().disable()
-                .httpBasic(httpBasic -> {});
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 }
