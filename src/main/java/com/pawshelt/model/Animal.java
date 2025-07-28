@@ -12,14 +12,13 @@ public class Animal {
     private String nombre;
     private String raza;
     private Integer edad;
+    private String fotoPerfilUrl;
 
     @Enumerated(EnumType.STRING)
     private TipoAnimal tipo; // GATO, PERRO, etc.
 
     @Enumerated(EnumType.STRING)
     private EstadoAnimal estado; // EN_ADOPCION, ADOPTADO, etc.
-
-    private String fotoPerfilUrl;
 
     // Constructor vacío (obligatorio para JPA)
     public Animal() {}
@@ -54,7 +53,7 @@ public class Animal {
         return edad;
     }
 
-    public void setFotoPerfilUrl(String raza) {
+    public void setFotoPerfilUrl(String fotoPerfilUrl) {
         this.fotoPerfilUrl = fotoPerfilUrl;
     }
 
@@ -81,4 +80,5 @@ public class Animal {
     public void setEstado(EstadoAnimal estado) {
         this.estado = estado;
     }
+
 }
