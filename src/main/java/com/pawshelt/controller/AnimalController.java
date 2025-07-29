@@ -66,5 +66,14 @@ public class AnimalController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /* METODO PARA FILTRAR ANIMALES POR TIPO (GATO, PERRO, ETC.) */
+    @GetMapping("/tipo/{tipo}")
+    public List<Animal> getAnimalesPorTipo(@PathVariable String tipo) {
+        try {
+            return repository.findByTipo(Enum.valueOf(com.pawshelt.model.TipoAnimal.class, tipo.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            return List.of(); // Devuelve una lista vacía si el tipo no es válido
+        }
+    }
 
 }
