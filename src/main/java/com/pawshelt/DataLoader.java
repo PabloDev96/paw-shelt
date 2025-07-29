@@ -1,4 +1,4 @@
-package com.pawshelt;
+/*package com.pawshelt;
 
 import com.pawshelt.model.Animal;
 import com.pawshelt.model.EstadoAnimal;
@@ -79,4 +79,4 @@ public class DataLoader {
             repository.save(animal7);
         };
     }
-}
+}*/
