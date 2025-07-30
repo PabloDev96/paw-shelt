@@ -11,14 +11,21 @@ public class Animal {
 
     private String nombre;
     private String raza;
-    private Integer edad;
+    private Integer edadCantidad;
     private String fotoPerfilUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "unidad_edad")
+    private UnidadEdad unidadEdad; // ANIOS o MESES
 
     @Enumerated(EnumType.STRING)
     private TipoAnimal tipo; // GATO, PERRO, etc.
 
     @Enumerated(EnumType.STRING)
     private EstadoAnimal estado; // EN_ADOPCION, ADOPTADO, etc.
+
+    @Column(length = 1000)
+    private String descripcion;
 
     // Constructor vacío (obligatorio para JPA)
     public Animal() {}
@@ -49,10 +56,6 @@ public class Animal {
         this.raza = raza;
     }
 
-    public Integer getEdad() {
-        return edad;
-    }
-
     public void setFotoPerfilUrl(String fotoPerfilUrl) {
         this.fotoPerfilUrl = fotoPerfilUrl;
     }
@@ -61,8 +64,20 @@ public class Animal {
         return fotoPerfilUrl;
     }
 
-    public void setEdad(Integer edad) {
-        this.edad = edad;
+    public Integer getEdadCantidad() {
+        return edadCantidad;
+    }
+
+    public void setEdadCantidad(Integer edadCantidad) {
+        this.edadCantidad = edadCantidad;
+    }
+
+    public UnidadEdad getUnidadEdad() {
+        return unidadEdad;
+    }
+
+    public void setUnidadEdad(UnidadEdad unidadEdad) {
+        this.unidadEdad = unidadEdad;
     }
 
     public TipoAnimal getTipo() {
@@ -79,6 +94,14 @@ public class Animal {
 
     public void setEstado(EstadoAnimal estado) {
         this.estado = estado;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
 }
