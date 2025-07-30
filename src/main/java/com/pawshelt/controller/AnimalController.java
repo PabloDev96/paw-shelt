@@ -45,8 +45,6 @@ public class AnimalController {
     public ResponseEntity<Animal> actualizarAnimal(@PathVariable Long id, @RequestBody Animal animalActualizado) {
         return repository.findById(id)
                 .map(animal -> {
-                    System.out.println("Payload recibido: " + animalActualizado);
-
                     animal.setNombre(animalActualizado.getNombre());
                     animal.setRaza(animalActualizado.getRaza());
                     animal.setEdadCantidad(animalActualizado.getEdadCantidad());
@@ -55,8 +53,6 @@ public class AnimalController {
                     animal.setEstado(animalActualizado.getEstado());
                     animal.setFotoPerfilUrl(animalActualizado.getFotoPerfilUrl());
                     animal.setDescripcion(animalActualizado.getDescripcion());
-                    System.out.println("unidadEdad recibida: " + animalActualizado.getUnidadEdad());
-
                     Animal actualizado = repository.save(animal);
                     return ResponseEntity.ok(actualizado);
                 })
