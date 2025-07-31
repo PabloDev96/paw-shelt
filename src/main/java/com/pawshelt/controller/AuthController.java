@@ -6,6 +6,7 @@ import com.pawshelt.model.Usuario;
 import com.pawshelt.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,8 +55,24 @@ public class AuthController {
     }
 
     // 📝 REGISTRO
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register")
     public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
+
+        // Validación básica de campos
+        if (usuario.getNombre() == null || usuario.getNombre().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("El nombre es obligatorio.");
+        }
+
+        if (usuario.getEmail() == null || !usuario.getEmail().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+            return ResponseEntity.badRequest().body("El correo electrónico no es válido.");
+        }
+
+        if (usuario.getPassword() == null ||
+                !usuario.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
+            return ResponseEntity.badRequest().body("La contraseña debe tener al menos 8 caracteres, incluyendo letras y números.");
+        }
+
         if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("El email ya está registrado.");
         }

@@ -3,6 +3,7 @@ package com.pawshelt.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,6 +17,7 @@ import java.util.List;
 
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -53,8 +55,9 @@ public class SecurityConfig {
                         .frameOptions().sameOrigin() // ESTA LÍNEA PERMITE IFRAME PARA H2
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/usuarios/**", "/auth/register", "/auth/login").permitAll() // públicos
-                          .requestMatchers("/animales/**").authenticated() // requieren login
+                        .requestMatchers("/auth/login").permitAll() // públicos
+                        .requestMatchers("/auth/register", "/finanzas/**", "/crear-usuario/**").hasRole("ADMIN") // requieren rol ADMIN
+                        .requestMatchers("/animales/**").authenticated() // requieren login
                         .anyRequest().denyAll()
                 )
 

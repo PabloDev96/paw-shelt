@@ -1,5 +1,6 @@
 package com.pawshelt.config;
 
+import com.pawshelt.model.Usuario;
 import com.pawshelt.repository.UsuarioRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -8,11 +9,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -45,8 +49,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
             usuarioRepository.findByEmail(email).ifPresent(usuario -> {
                 if (jwtUtil.isTokenValid(token, email)) {
+                    // Asignar el rol como autoridad
                     var auth = new UsernamePasswordAuthenticationToken(
-                            usuario, null, null // Puedes mapear roles si quieres
+                            usuario,
+                            null,
+                            Collections.singletonList(
+                                    new SimpleGrantedAuthority("ROLE_" + usuario.getRol().toString())
+                            )
                     );
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
