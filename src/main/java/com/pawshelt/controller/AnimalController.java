@@ -53,6 +53,7 @@ public class AnimalController {
                     animal.setEstado(animalActualizado.getEstado());
                     animal.setFotoPerfilUrl(animalActualizado.getFotoPerfilUrl());
                     animal.setDescripcion(animalActualizado.getDescripcion());
+                    animal.setSexo(animalActualizado.getSexo());
                     Animal actualizado = repository.save(animal);
                     return ResponseEntity.ok(actualizado);
                 })

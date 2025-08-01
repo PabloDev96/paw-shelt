@@ -24,6 +24,9 @@ public class Animal {
     @Enumerated(EnumType.STRING)
     private EstadoAnimal estado; // EN_ADOPCION, ADOPTADO, etc.
 
+    @Enumerated(EnumType.STRING)
+    private Sexo sexo; // MACHO o HEMBRA
+
     @Column(length = 1000)
     private String descripcion;
 
@@ -103,5 +106,14 @@ public class Animal {
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
+
+    public Sexo getSexo() {
+        return sexo;
+    }
+
+    public void setSexo(Sexo sexo) {
+        this.sexo = sexo;
+    }
+
 
 }
