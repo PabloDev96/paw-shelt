@@ -57,7 +57,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login").permitAll() // públicos
                         .requestMatchers("/auth/register", "/finanzas/**", "/crear-usuario/**").hasRole("ADMIN") // requieren rol ADMIN
-                        .requestMatchers("/animales/**").authenticated() // requieren login
+                        .requestMatchers("/animales/**").authenticated() // requiere login
+                        .requestMatchers("/citas/**").authenticated() // requiere login
+                        .requestMatchers("/adoptantes/**").authenticated() // requiere login
                         .anyRequest().denyAll()
                 )
 

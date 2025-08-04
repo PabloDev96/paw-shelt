@@ -1,6 +1,9 @@
 package com.pawshelt.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class PersonaAdoptante {
@@ -13,6 +16,10 @@ public class PersonaAdoptante {
     private String email;
     private String telefono;
     private String direccion;
+
+    @OneToMany(mappedBy = "personaAdoptante")
+    @JsonIgnore
+    private List<Cita> citas;
 
     public PersonaAdoptante() {}
 
