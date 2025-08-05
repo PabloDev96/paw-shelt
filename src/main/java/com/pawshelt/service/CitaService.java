@@ -31,10 +31,17 @@ public class CitaService {
     }
 
     public CitaDTO crear(CitaDTO dto) {
+        // Validación de superposición
+        List<Cita> superpuestas = citaRepo.findCitasSuperpuestas(dto.getFechaHoraInicio(), dto.getFechaHoraFin());
+        if (!superpuestas.isEmpty()) {
+            throw new RuntimeException("Ya existe una cita en ese horario"); // o ResponseStatusException con 409
+        }
+
         Cita cita = new Cita();
         copiarDTOaEntidad(dto, cita);
         return toDTO(citaRepo.save(cita));
     }
+
 
     public CitaDTO actualizar(Long id, CitaDTO dto) {
         Cita cita = citaRepo.findById(id).orElseThrow();
