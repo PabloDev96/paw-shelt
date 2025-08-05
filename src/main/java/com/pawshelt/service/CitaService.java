@@ -6,6 +6,8 @@ import com.pawshelt.model.PersonaAdoptante;
 import com.pawshelt.repository.CitaRepository;
 import com.pawshelt.repository.PersonaAdoptanteRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -34,7 +36,7 @@ public class CitaService {
         // Validación de superposición
         List<Cita> superpuestas = citaRepo.findCitasSuperpuestas(dto.getFechaHoraInicio(), dto.getFechaHoraFin());
         if (!superpuestas.isEmpty()) {
-            throw new RuntimeException("Ya existe una cita en ese horario"); // o ResponseStatusException con 409
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una cita en ese horario");
         }
 
         Cita cita = new Cita();
@@ -44,10 +46,20 @@ public class CitaService {
 
 
     public CitaDTO actualizar(Long id, CitaDTO dto) {
+        List<Cita> superpuestas = citaRepo.findCitasSuperpuestas(dto.getFechaHoraInicio(), dto.getFechaHoraFin());
+
+        // Filtra para ignorar la propia cita que se está actualizando
+        superpuestas.removeIf(c -> c.getId().equals(id));
+
+        if (!superpuestas.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una cita en ese horario");
+        }
+
         Cita cita = citaRepo.findById(id).orElseThrow();
         copiarDTOaEntidad(dto, cita);
         return toDTO(citaRepo.save(cita));
     }
+
 
     public void eliminar(Long id) {
         citaRepo.deleteById(id);
