@@ -1,28 +1,26 @@
-package com.pawshelt.model;
+package com.pawshelt.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+public class PersonaAdoptanteDTO {
 
-import java.util.List;
-
-@Entity
-public class PersonaAdoptante {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nombre;
     private String email;
     private String telefono;
     private String direccion;
 
-    @OneToMany(mappedBy = "personaAdoptante")
-    @JsonIgnore
-    private List<Cita> citas;
+    // Constructor vacío
+    public PersonaAdoptanteDTO() {}
 
-    public PersonaAdoptante() {}
+    // Constructor con todos los campos
+    public PersonaAdoptanteDTO(Long id, String nombre, String email, String telefono, String direccion) {
+        this.id = id;
+        this.nombre = nombre;
+        this.email = email;
+        this.telefono = telefono;
+        this.direccion = direccion;
+    }
 
+    // Getters y setters
     public Long getId() {
         return id;
     }
@@ -61,9 +59,5 @@ public class PersonaAdoptante {
 
     public void setDireccion(String direccion) {
         this.direccion = direccion;
-    }
-
-    public String getNombreCompleto() {
-        return nombre;
     }
 }

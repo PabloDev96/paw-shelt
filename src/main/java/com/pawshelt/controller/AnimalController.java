@@ -24,6 +24,16 @@ public class AnimalController {
         return repository.findAll().stream().map(this::toDTO).toList();
     }
 
+    /* METODO PARA OBTENER ANIMALES DISPONIBLES PARA ADOPCIÓN */
+    @GetMapping("/disponibles-para-adopcion")
+    public List<AnimalDTO> getAnimalesDisponiblesParaAdopcion() {
+        return repository.findAll().stream()
+                .filter(a -> a.getEstado() == com.pawshelt.model.EstadoAnimal.EN_ADOPCION
+                        || a.getEstado() == com.pawshelt.model.EstadoAnimal.EN_CASA_DE_ACOGIDA)
+                .map(this::toDTO)
+                .toList();
+    }
+
     /* METODO PARA CREAR UN ANIMAL */
     @PostMapping
     public AnimalDTO crearAnimal(@RequestBody AnimalDTO animalDTO) {

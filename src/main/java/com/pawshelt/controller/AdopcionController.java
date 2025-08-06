@@ -1,0 +1,36 @@
+package com.pawshelt.controller;
+
+import com.pawshelt.dto.AdopcionDTO;
+import com.pawshelt.dto.AdopcionRequest;
+import com.pawshelt.service.AdopcionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/adopciones")
+@CrossOrigin(origins = "*") // Asegura acceso desde React
+public class AdopcionController {
+
+    @Autowired
+    private AdopcionService adopcionService;
+
+    @GetMapping
+    public List<AdopcionDTO> listarAdopciones() {
+        return adopcionService.obtenerTodasLasAdopciones();
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> crearAdopcion(@RequestBody AdopcionRequest request) {
+        try {
+            adopcionService.crearAdopcion(request);
+            return ResponseEntity.ok("Adopción registrada con éxito");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al registrar la adopción: " + e.getMessage());
+        }
+    }
+}
