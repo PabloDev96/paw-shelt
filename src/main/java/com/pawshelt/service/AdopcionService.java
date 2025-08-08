@@ -1,7 +1,6 @@
 package com.pawshelt.service;
 
-import com.pawshelt.dto.AdopcionDTO;
-import com.pawshelt.dto.AdopcionRequest;
+import com.pawshelt.dto.*;
 import com.pawshelt.model.Adopcion;
 import com.pawshelt.model.Animal;
 import com.pawshelt.model.EstadoAnimal;
@@ -65,4 +64,42 @@ public class AdopcionService {
         // Guardar adopción
         adopcionRepository.save(adopcion);
     }
+
+    // Listado adopciones con detalles
+    public List<AdopcionCompletoDTO> obtenerTodasLasAdopcionesConDetalle() {
+        // Esto trae todas las adopciones, asegurándonos que también traemos los datos del animal y adoptante
+        List<Adopcion> adopciones = adopcionRepository.findAllConRelaciones();
+
+        return adopciones.stream().map(adopcion -> {
+            // Aquí creamos los DTOs de Animal y Adoptante con todos los datos necesarios
+            Animal animal = adopcion.getAnimal();
+            PersonaAdoptante adoptante = adopcion.getPersonaAdoptante();
+
+            AnimalDTO animalDTO = new AnimalDTO();
+            animalDTO.setId(animal.getId());
+            animalDTO.setNombre(animal.getNombre());
+            animalDTO.setRaza(animal.getRaza());
+            animalDTO.setEdadCantidad(animal.getEdadCantidad());
+            animalDTO.setUnidadEdad(animal.getUnidadEdad());
+            animalDTO.setSexo(animal.getSexo());
+            // ... completa con los demás campos que tengas
+
+            PersonaAdoptanteDTO adoptanteDTO = new PersonaAdoptanteDTO();
+            adoptanteDTO.setId(adoptante.getId());
+            adoptanteDTO.setNombre(adoptante.getNombre());
+            adoptanteDTO.setEmail(adoptante.getEmail());
+            adoptanteDTO.setTelefono(adoptante.getTelefono());
+            adoptanteDTO.setDireccion(adoptante.getDireccion());
+
+            return new AdopcionCompletoDTO(
+                    adopcion.getId(),
+                    adopcion.getFechaAdopcion(),
+                    adopcion.getObservaciones(),
+                    animalDTO,
+                    adoptanteDTO
+            );
+        }).collect(Collectors.toList());
+    }
+
+
 }

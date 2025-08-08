@@ -1,5 +1,6 @@
 package com.pawshelt.controller;
 
+import com.pawshelt.dto.AdopcionCompletoDTO;
 import com.pawshelt.dto.AdopcionDTO;
 import com.pawshelt.dto.AdopcionRequest;
 import com.pawshelt.service.AdopcionService;
@@ -19,9 +20,10 @@ public class AdopcionController {
     private AdopcionService adopcionService;
 
     @GetMapping
-    public List<AdopcionDTO> listarAdopciones() {
-        return adopcionService.obtenerTodasLasAdopciones();
+    public List<AdopcionCompletoDTO> listarAdopciones() {
+        return adopcionService.obtenerTodasLasAdopcionesConDetalle();
     }
+
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
