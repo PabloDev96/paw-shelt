@@ -35,4 +35,12 @@ public class AdopcionController {
             return ResponseEntity.badRequest().body("Error al registrar la adopción: " + e.getMessage());
         }
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> eliminarAdopcion(@PathVariable Long id) {
+        boolean eliminado = adopcionService.eliminarAdopcion(id);
+        return eliminado ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
+    }
 }

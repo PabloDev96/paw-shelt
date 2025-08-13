@@ -65,6 +65,14 @@ public class AdopcionService {
         adopcionRepository.save(adopcion);
     }
 
+    // Eliminar adopción
+
+    public boolean eliminarAdopcion(Long id) {
+        if (!adopcionRepository.existsById(id)) return false;
+        adopcionRepository.deleteById(id);
+        return true;
+    }
+
     // Listado adopciones con detalles
     public List<AdopcionCompletoDTO> obtenerTodasLasAdopcionesConDetalle() {
         // Esto trae todas las adopciones, asegurándonos que también traemos los datos del animal y adoptante
