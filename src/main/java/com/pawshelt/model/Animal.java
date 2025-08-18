@@ -1,8 +1,10 @@
 package com.pawshelt.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
+@Table(name = "animal")
 public class Animal {
 
     @Id
@@ -12,6 +14,8 @@ public class Animal {
     private String nombre;
     private String raza;
     private Integer edadCantidad;
+
+    @Column(name = "foto_perfil_url")
     private String fotoPerfilUrl;
 
     @Enumerated(EnumType.STRING)
@@ -30,90 +34,51 @@ public class Animal {
     @Column(length = 1000)
     private String descripcion;
 
-    // Constructor vacío (obligatorio para JPA)
+    @Column(name = "fecha_ingreso", nullable = false, updatable = false)
+    private LocalDate fechaIngreso;
+
     public Animal() {}
 
-    // Getters y setters
-
-    public Long getId() {
-        return id;
+    /* lifecycle: autocompletar fechaIngreso */
+    @PrePersist
+    protected void onCreate() {
+        if (fechaIngreso == null) {
+            fechaIngreso = LocalDate.now();
+        }
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    /* getters/setters */
 
-    public String getNombre() {
-        return nombre;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public String getRaza() {
-        return raza;
-    }
+    public String getRaza() { return raza; }
+    public void setRaza(String raza) { this.raza = raza; }
 
-    public void setRaza(String raza) {
-        this.raza = raza;
-    }
+    public Integer getEdadCantidad() { return edadCantidad; }
+    public void setEdadCantidad(Integer edadCantidad) { this.edadCantidad = edadCantidad; }
 
-    public void setFotoPerfilUrl(String fotoPerfilUrl) {
-        this.fotoPerfilUrl = fotoPerfilUrl;
-    }
+    public String getFotoPerfilUrl() { return fotoPerfilUrl; }
+    public void setFotoPerfilUrl(String fotoPerfilUrl) { this.fotoPerfilUrl = fotoPerfilUrl; }
 
-    public String getFotoPerfilUrl() {
-        return fotoPerfilUrl;
-    }
+    public UnidadEdad getUnidadEdad() { return unidadEdad; }
+    public void setUnidadEdad(UnidadEdad unidadEdad) { this.unidadEdad = unidadEdad; }
 
-    public Integer getEdadCantidad() {
-        return edadCantidad;
-    }
+    public TipoAnimal getTipo() { return tipo; }
+    public void setTipo(TipoAnimal tipo) { this.tipo = tipo; }
 
-    public void setEdadCantidad(Integer edadCantidad) {
-        this.edadCantidad = edadCantidad;
-    }
+    public EstadoAnimal getEstado() { return estado; }
+    public void setEstado(EstadoAnimal estado) { this.estado = estado; }
 
-    public UnidadEdad getUnidadEdad() {
-        return unidadEdad;
-    }
+    public Sexo getSexo() { return sexo; }
+    public void setSexo(Sexo sexo) { this.sexo = sexo; }
 
-    public void setUnidadEdad(UnidadEdad unidadEdad) {
-        this.unidadEdad = unidadEdad;
-    }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public TipoAnimal getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(TipoAnimal tipo) {
-        this.tipo = tipo;
-    }
-
-    public EstadoAnimal getEstado() {
-        return estado;
-    }
-
-    public void setEstado(EstadoAnimal estado) {
-        this.estado = estado;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public Sexo getSexo() {
-        return sexo;
-    }
-
-    public void setSexo(Sexo sexo) {
-        this.sexo = sexo;
-    }
-
-
+    public LocalDate getFechaIngreso() { return fechaIngreso; }
+    public void setFechaIngreso(LocalDate fechaIngreso) { this.fechaIngreso = fechaIngreso; }
 }

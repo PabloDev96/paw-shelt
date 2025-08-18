@@ -2,6 +2,7 @@ package com.pawshelt.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,7 +15,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
-
 
 @Configuration
 @EnableMethodSecurity
@@ -50,19 +50,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults()) // ⬅️ activa tu config CORS
                 .csrf().disable()
                 .headers(headers -> headers
                         .frameOptions().sameOrigin() // ESTA LÍNEA PERMITE IFRAME PARA H2
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login").permitAll() // públicos
-                        .requestMatchers("/auth/register", "/adopciones/**", "/crear-usuario/**").hasRole("ADMIN") // requieren rol ADMIN
-                        .requestMatchers("/animales/**").authenticated() // requiere login
-                        .requestMatchers("/citas/**").authenticated() // requiere login
-                        .requestMatchers("/adoptantes/**").authenticated() // requiere login
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/auth/register", "/adopciones/**", "/crear-usuario/**").hasRole("ADMIN")
+                        .requestMatchers("/graficos/**").hasRole("ADMIN")
+                        .requestMatchers("/animales/**").authenticated()
+                        .requestMatchers("/citas/**").authenticated()
+                        .requestMatchers("/adoptantes/**").authenticated()
                         .anyRequest().denyAll()
                 )
-
                 .formLogin().disable()
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
