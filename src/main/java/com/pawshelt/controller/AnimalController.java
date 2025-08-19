@@ -3,9 +3,14 @@ package com.pawshelt.controller;
 import com.pawshelt.dto.AnimalDTO;
 import com.pawshelt.model.Animal;
 import com.pawshelt.repository.AnimalRepository;
+import com.pawshelt.service.CloudinaryService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -13,18 +18,20 @@ import java.util.List;
 public class AnimalController {
 
     private final AnimalRepository repository;
+    private final CloudinaryService cloudinaryService;
 
-    public AnimalController(AnimalRepository repository) {
+    public AnimalController(AnimalRepository repository, CloudinaryService cloudinaryService) {
         this.repository = repository;
+        this.cloudinaryService = cloudinaryService;
     }
 
-    /* METODO PARA OBTENER TODOS LOS DATOS DE LA ENTIDAD ANIMAL */
+    /* ===== LISTADOS ===== */
+
     @GetMapping
     public List<AnimalDTO> getAllAnimales() {
         return repository.findAll().stream().map(this::toDTO).toList();
     }
 
-    /* METODO PARA OBTENER ANIMALES DISPONIBLES PARA ADOPCIÓN */
     @GetMapping("/disponibles-para-adopcion")
     public List<AnimalDTO> getAnimalesDisponiblesParaAdopcion() {
         return repository.findAll().stream()
@@ -34,25 +41,54 @@ public class AnimalController {
                 .toList();
     }
 
-    /* METODO PARA CREAR UN ANIMAL */
-    @PostMapping
-    public AnimalDTO crearAnimal(@RequestBody AnimalDTO animalDTO) {
-        Animal animal = toEntity(animalDTO);
-        return toDTO(repository.save(animal));
+    @GetMapping("/{id}")
+    public ResponseEntity<AnimalDTO> getAnimalPorId(@PathVariable Long id) {
+        return repository.findById(id)
+                .map(this::toDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    /* METODO PARA ELIMINAR UN ANIMAL */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarAnimal(@PathVariable Long id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return ResponseEntity.noContent().build(); // 204 No Content
-        } else {
-            return ResponseEntity.notFound().build();  // 404 Not Found
+    @GetMapping("/tipo/{tipo}")
+    public List<AnimalDTO> getAnimalesPorTipo(@PathVariable String tipo) {
+        try {
+            return repository.findByTipo(Enum.valueOf(com.pawshelt.model.TipoAnimal.class, tipo.toUpperCase()))
+                    .stream().map(this::toDTO).toList();
+        } catch (IllegalArgumentException e) {
+            return List.of();
         }
     }
 
-    /* METODO PARA EDITAR UN ANIMAL POR ID */
+    /* ===== CREACIÓN ===== */
+
+    /** A) Crear SOLO con JSON (compatibilidad con tu front actual) */
+    @PostMapping(consumes = "application/json")
+    public AnimalDTO crearAnimalJson(@RequestBody AnimalDTO animalDTO) {
+        Animal animal = repository.save(toEntity(animalDTO));
+        return toDTO(animal);
+    }
+
+    /** B) Crear con JSON + FOTO (multipart) */
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<AnimalDTO> crearAnimalMultipart(
+            @RequestPart("animal") AnimalDTO animalDTO,
+            @RequestPart(value = "foto", required = false) MultipartFile foto
+    ) throws IOException {
+        // 1) Guardamos el animal para obtener ID
+        Animal a = repository.save(toEntity(animalDTO));
+
+        // 2) Si viene foto, la subimos a Cloudinary y guardamos la URL
+        if (foto != null && !foto.isEmpty()) {
+            String url = cloudinaryService.uploadAnimalPhoto(a.getId(), foto);
+            a.setFotoPerfilUrl(url);
+            a = repository.save(a);
+        }
+
+        return ResponseEntity.ok(toDTO(a));
+    }
+
+    /* ===== ACTUALIZACIÓN ===== */
+
     @PutMapping("/{id}")
     public ResponseEntity<AnimalDTO> actualizarAnimal(@PathVariable Long id, @RequestBody AnimalDTO animalDTO) {
         return repository.findById(id)
@@ -72,27 +108,36 @@ public class AnimalController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /* METODO PARA OBTENER TODOS LOS DATOS DE UN ANIMAL POR ID */
-    @GetMapping("/{id}")
-    public ResponseEntity<AnimalDTO> getAnimalPorId(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(this::toDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    /** Subir/actualizar SOLO la foto de un animal existente */
+    @PutMapping(value = "/{id}/foto", consumes = "multipart/form-data")
+    public ResponseEntity<AnimalDTO> actualizarFoto(
+            @PathVariable Long id,
+            @RequestPart("foto") MultipartFile foto
+    ) throws IOException {
+        Animal a = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Animal no encontrado"));
+
+        String url = cloudinaryService.uploadAnimalPhoto(a.getId(), foto);
+        a.setFotoPerfilUrl(url);
+        a = repository.save(a);
+
+        return ResponseEntity.ok(toDTO(a));
     }
 
-    /* METODO PARA FILTRAR ANIMALES POR TIPO (GATO, PERRO, ETC.) */
-    @GetMapping("/tipo/{tipo}")
-    public List<AnimalDTO> getAnimalesPorTipo(@PathVariable String tipo) {
-        try {
-            return repository.findByTipo(Enum.valueOf(com.pawshelt.model.TipoAnimal.class, tipo.toUpperCase()))
-                    .stream().map(this::toDTO).toList();
-        } catch (IllegalArgumentException e) {
-            return List.of(); // Devuelve una lista vacía si el tipo no es válido
+    /* ===== ELIMINACIÓN ===== */
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarAnimal(@PathVariable Long id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
-    /* CONVERSIÓN DE ENTITY A DTO */
+    /* ===== MAPEOS ===== */
+
     private AnimalDTO toDTO(Animal a) {
         AnimalDTO dto = new AnimalDTO();
         dto.setId(a.getId());
@@ -108,7 +153,6 @@ public class AnimalController {
         return dto;
     }
 
-    /* CONVERSIÓN DE DTO A ENTITY */
     private Animal toEntity(AnimalDTO dto) {
         Animal a = new Animal();
         a.setNombre(dto.getNombre());
