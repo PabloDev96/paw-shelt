@@ -1,23 +1,31 @@
-# Imagen base con Java 17
-FROM openjdk:17-jdk-slim
-
-# Crea una carpeta para la app
+# ---------- Build stage ----------
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Copia el pom.xml y descarga dependencias
+# Copiamos lo mínimo para cachear dependencias
 COPY pom.xml .
-COPY mvnw .
 COPY .mvn .mvn
-RUN ./mvnw dependency:go-offline
+COPY mvnw .
+RUN chmod +x mvnw \
+ && ./mvnw -B -DskipTests dependency:go-offline
 
-# Copia el resto del código
-COPY . .
+# Copiamos el código y empaquetamos
+COPY src src
+RUN ./mvnw -B -DskipTests package
 
-# Empaqueta la app (salta los tests para que sea más rápido)
-RUN ./mvnw clean package -DskipTests
+# ---------- Run stage (runtime ligero) ----------
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /app
 
-# Expone el puerto (Render usará PORT como env var)
+# Copiamos el JAR construido
+COPY --from=build /app/target/*.jar /app/app.jar
+
+# Puerto interno (Render usará la env PORT igualmente)
 EXPOSE 8080
 
-# Comando para arrancar
-CMD ["java", "-jar", "target/*.jar"]
+# Perfil por defecto en contenedor
+ENV SPRING_PROFILES_ACTIVE=prod
+ENV JAVA_OPTS=""
+
+# Ejecuta respetando la PORT de Render
+CMD ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar /app/app.jar"]
