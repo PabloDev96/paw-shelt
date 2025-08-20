@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,6 +15,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.Duration;
 import java.util.List;
 
 @Configuration
@@ -26,52 +28,66 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    // Bean para hashear y verificar contraseñas
+    // Hash de contraseñas
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // CORS configuration
+    // Configuración CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
+
+        // Dominios permitidos (incluye previews de Vercel)
+        config.setAllowedOriginPatterns(List.of(
+                "https://*.vercel.app",
                 "https://paw-shelt-frontend.vercel.app",
                 "http://localhost:5173"
-        )); // Front de reactvite (provisional aun sin desplegar)
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setAllowCredentials(true); // para cookies/sesiones
+        ));
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        // Headers permitidos (comodín para evitar problemas en preflight)
+        config.setAllowedHeaders(List.of("*"));
+        // Headers expuestos (si envías Authorization u otros)
+        config.setExposedHeaders(List.of("Authorization", "Location"));
+        config.setAllowCredentials(true);
+        // Cache del preflight
+        config.setMaxAge(Duration.ofHours(1));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
 
-    // Configuración de seguridad HTTP
+    // Seguridad HTTP
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // ⬅️ activa tu config CORS
-                .csrf().disable()
-                .headers(headers -> headers
-                        .frameOptions().sameOrigin() // ESTA LÍNEA PERMITE IFRAME PARA H2
-                )
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login").permitAll() // públicos
+                        // Públicos
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/auth/register", "/adopciones/**", "/crear-usuario/**").hasRole("ADMIN")
+
+                        // Solo ADMIN
                         .requestMatchers("/graficos/**").hasRole("ADMIN")
+                        .requestMatchers("/adopciones/**", "/crear-usuario/**").hasRole("ADMIN")
+
+                        // Autenticados
                         .requestMatchers("/animales/**").authenticated()
                         .requestMatchers("/citas/**").authenticated()
                         .requestMatchers("/adoptantes/**").authenticated()
+
+                        // Resto
                         .anyRequest().denyAll()
                 )
-                .formLogin().disable()
+                .formLogin(form -> form.disable())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 }
