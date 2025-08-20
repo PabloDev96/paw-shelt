@@ -36,7 +36,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // Front de reactvite (provisional aun sin desplegar)
+        config.setAllowedOrigins(List.of(
+                "https://paw-shelt-frontend.vercel.app",
+                "http://localhost:5173"
+        )); // Front de reactvite (provisional aun sin desplegar)
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true); // para cookies/sesiones
