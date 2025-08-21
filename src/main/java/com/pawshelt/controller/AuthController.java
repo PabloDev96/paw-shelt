@@ -4,6 +4,7 @@ import com.pawshelt.config.JwtUtil;
 import com.pawshelt.model.LoginRequest;
 import com.pawshelt.model.Usuario;
 import com.pawshelt.repository.UsuarioRepository;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -55,7 +56,7 @@ public class AuthController {
     }
 
     // 📝 REGISTRO
-    @PreAuthorize("hasRole('ADMIN')")
+    @PermitAll
     @PostMapping("/register")
     public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
 
