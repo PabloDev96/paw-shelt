@@ -28,31 +28,23 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    // Hash de contraseñas
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Configuración CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
-        // Dominios permitidos (incluye previews de Vercel)
         config.setAllowedOriginPatterns(List.of(
                 "https://*.vercel.app",
                 "https://paw-shelt-frontend.vercel.app",
                 "http://localhost:5173"
         ));
-
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        // Headers permitidos (comodín para evitar problemas en preflight)
         config.setAllowedHeaders(List.of("*"));
-        // Headers expuestos (si envías Authorization u otros)
         config.setExposedHeaders(List.of("Authorization", "Location"));
         config.setAllowCredentials(true);
-        // Cache del preflight
         config.setMaxAge(Duration.ofHours(1));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -60,7 +52,6 @@ public class SecurityConfig {
         return source;
     }
 
-    // Seguridad HTTP
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -69,9 +60,10 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Públicos
+                        // Públicos (añadido /, /error y health para evitar 403 al abrir la URL)
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/", "/error", "/actuator/health").permitAll()
 
                         // Solo ADMIN
                         .requestMatchers("/graficos/**").hasRole("ADMIN")
@@ -82,8 +74,8 @@ public class SecurityConfig {
                         .requestMatchers("/citas/**").authenticated()
                         .requestMatchers("/adoptantes/**").authenticated()
 
-                        // Resto
-                        .anyRequest().denyAll()
+                        // Resto: requiere estar autenticado (antes estaba denyAll -> 403)
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
