@@ -63,6 +63,7 @@ public class SecurityConfig {
                         // Públicos (añadido /, /error y health para evitar 403 al abrir la URL)
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/ping").permitAll()
                         .requestMatchers("/", "/error", "/actuator/health").permitAll()
 
                         // Solo ADMIN
