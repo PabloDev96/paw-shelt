@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Públicos (añadido /, /error y health para evitar 403 al abrir la URL)
+                        // Públicos
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/ping").permitAll()
@@ -68,14 +68,17 @@ public class SecurityConfig {
 
                         // Solo ADMIN
                         .requestMatchers("/graficos/**").hasRole("ADMIN")
-                        .requestMatchers("/adopciones/**", "/crear-usuario/**").hasRole("ADMIN")
+                        .requestMatchers("/crear-usuario/**").hasRole("ADMIN")
 
-                        // Autenticados
+                        // ADMIN o TRABAJADOR -> Adopciones
+                        .requestMatchers("/adopciones/**").hasAnyRole("ADMIN","TRABAJADOR")
+
+                        // Autenticados (cualquier rol válido)
                         .requestMatchers("/animales/**").authenticated()
                         .requestMatchers("/citas/**").authenticated()
                         .requestMatchers("/adoptantes/**").authenticated()
 
-                        // Resto: requiere estar autenticado (antes estaba denyAll -> 403)
+                        // Resto autenticado
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
