@@ -29,4 +29,7 @@ public interface AdopcionRepository extends JpaRepository<Adopcion, Long> {
       GROUP BY k ORDER BY k
       """, nativeQuery = true)
     List<Object[]> countAdopcionesPorMes(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
+
+    // Comprueba si existe alguna adopción que referencia al animal indicado
+    boolean existsByAnimalId(Long animalId);
 }

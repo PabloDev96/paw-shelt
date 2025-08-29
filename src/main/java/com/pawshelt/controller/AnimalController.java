@@ -2,6 +2,7 @@ package com.pawshelt.controller;
 
 import com.pawshelt.dto.AnimalDTO;
 import com.pawshelt.model.Animal;
+import com.pawshelt.repository.AdopcionRepository;
 import com.pawshelt.repository.AnimalRepository;
 import com.pawshelt.service.CloudinaryService;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,14 @@ public class AnimalController {
 
     private final AnimalRepository repository;
     private final CloudinaryService cloudinaryService;
+    private final AdopcionRepository adopcionRepository;
 
-    public AnimalController(AnimalRepository repository, CloudinaryService cloudinaryService) {
+    public AnimalController(AnimalRepository repository,
+                            CloudinaryService cloudinaryService,
+                            AdopcionRepository adopcionRepository) {
         this.repository = repository;
         this.cloudinaryService = cloudinaryService;
+        this.adopcionRepository = adopcionRepository;
     }
 
     /* ===== LISTADOS ===== */
@@ -127,13 +132,19 @@ public class AnimalController {
     /* ===== ELIMINACIÓN ===== */
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarAnimal(@PathVariable Long id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
+    public ResponseEntity<?> eliminarAnimal(@PathVariable Long id) {
+        if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+
+        // 👉 si tiene adopciones, no permitimos borrar
+        if (adopcionRepository.existsByAnimalId(id)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("No se puede eliminar porque ya ha sido adoptado.");
+        }
+
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     /* ===== MAPEOS ===== */
