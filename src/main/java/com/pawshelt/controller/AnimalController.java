@@ -7,6 +7,7 @@ import com.pawshelt.repository.AnimalRepository;
 import com.pawshelt.service.CloudinaryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
@@ -131,13 +132,14 @@ public class AnimalController {
 
     /* ===== ELIMINACIÓN ===== */
 
+    @PreAuthorize("hasAnyRole('ADMIN','TRABAJADOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarAnimal(@PathVariable Long id) {
         if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
 
-        // 👉 si tiene adopciones, no permitimos borrar
+        // Si está adoptado, no se permite borrar
         if (adopcionRepository.existsByAnimalId(id)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("No se puede eliminar porque ya ha sido adoptado.");
