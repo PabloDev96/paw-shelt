@@ -163,6 +163,7 @@ public class AnimalController {
         dto.setSexo(a.getSexo());
         dto.setDescripcion(a.getDescripcion());
         dto.setFotoPerfilUrl(a.getFotoPerfilUrl());
+        dto.setFechaIngreso(a.getFechaIngreso());
         return dto;
     }
 
@@ -177,6 +178,7 @@ public class AnimalController {
         a.setSexo(dto.getSexo());
         a.setDescripcion(dto.getDescripcion());
         a.setFotoPerfilUrl(dto.getFotoPerfilUrl());
+        a.setFechaIngreso(dto.getFechaIngreso());
         return a;
     }
 }

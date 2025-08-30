@@ -4,6 +4,7 @@ import com.pawshelt.model.EstadoAnimal;
 import com.pawshelt.model.Sexo;
 import com.pawshelt.model.TipoAnimal;
 import com.pawshelt.model.UnidadEdad;
+import java.time.LocalDate;
 
 public class AnimalDTO {
 
@@ -17,6 +18,7 @@ public class AnimalDTO {
     private Sexo sexo;
     private String descripcion;
     private String fotoPerfilUrl;
+    private LocalDate fechaIngreso;
 
     // Getters y setters
     public Long getId() {
@@ -97,5 +99,13 @@ public class AnimalDTO {
 
     public void setFotoPerfilUrl(String fotoPerfilUrl) {
         this.fotoPerfilUrl = fotoPerfilUrl;
+    }
+
+    public LocalDate getFechaIngreso() {
+        return fechaIngreso;
+    }
+
+    public void setFechaIngreso(LocalDate fechaIngreso) {
+        this.fechaIngreso = fechaIngreso;
     }
 }
